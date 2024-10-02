@@ -25,36 +25,39 @@ ca = st.text_input("Enter ca:")
 thal = st.text_input("Enter thal:")
 
 if st.button("Send Request"):
-    data = {
-        "age": int(age),
-        "sex": sex,
-        "cp": int(cp),
-        "trestbps": int(trestbps),
-        "chol": int(chol),
-        "fbs": True if fbs == "true" else False,
-        "restecg": int(restecg),
-        "thalach": int(thalach),
-        "exang": True if fbs == "true" else False,
-        "oldpeak": float(oldpeak),
-        "slope": int(slope),
-        "ca": int(ca),
-        "thal": int(thal)
-    }
 
     try:
+        data = {
+            "age": int(age),
+            "sex": sex,
+            "cp": int(cp),
+            "trestbps": int(trestbps),
+            "chol": int(chol),
+            "fbs": True if fbs == "true" else False,
+            "restecg": int(restecg),
+            "thalach": int(thalach),
+            "exang": True if fbs == "true" else False,
+            "oldpeak": float(oldpeak),
+            "slope": int(slope),
+            "ca": int(ca),
+            "thal": int(thal)
+        }
         response = requests.post(ENDPOINT_URL, json=data)
+        if response.status_code == 200:
+            data = response.json()
+            prediction = data["prediction"]
+
+            if prediction:
+                st.subheader("There is a heart disease")
+            else:
+                st.subheader("There is no a heart disease")
+
+        elif response.status_code == 422:
+            st.error("Something wrong with data, please revise")
+        else:
+            st.error(f"Error: status code {response.status_code}")
     except requests.RequestException as e:
         st.error(f"An error occurred: {e}")
+    except ValueError as e:
+        st.error("Please fill all cells with correct values")
 
-    if response.status_code == 200:
-        data = response.json()
-        prediction = data["prediction"]
-
-        if prediction:
-            st.subheader("There is a heart disease")
-        else:
-            st.subheader("There is no a heart disease")
-    elif response.status_code == 422:
-        st.error("Something wrong with data, please revise")
-    else:
-        st.error(f"Error: status code {response.status_code}")
